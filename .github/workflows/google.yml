@@ -94,29 +94,29 @@ jobs:
       - name: login to docker
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
-      # - name: build client
-      #   run: docker build -t ndohjapan/multi-client ./client
+      - name: build client
+        run: docker build -t ndohjapan/multi-client ./client
 
-      # - name: build nginx
-      #   run: docker build -t ndohjapan/multi-nginx ./nginx
+      - name: build nginx
+        run: docker build -t ndohjapan/multi-nginx ./nginx
 
-      # - name: build server
-      #   run: docker build -t ndohjapan/multi-server ./server
+      - name: build server
+        run: docker build -t ndohjapan/multi-server ./server
 
-      # - name: build worker
-      #   run: docker build -t ndohjapan/multi-worker ./worker
+      - name: build worker
+        run: docker build -t ndohjapan/multi-worker ./worker
 
-      # - name: push client to docker hub
-      #   run: docker push ndohjapan/multi-client
+      - name: push client to docker hub
+        run: docker push ndohjapan/multi-client
 
-      # - name: push nginx to docker hub
-      #   run: docker push ndohjapan/multi-nginx
+      - name: push nginx to docker hub
+        run: docker push ndohjapan/multi-nginx
 
-      # - name: push server to docker hub
-      #   run: docker push ndohjapan/multi-server
+      - name: push server to docker hub
+        run: docker push ndohjapan/multi-server
 
-      # - name: push worker to docker hub
-      #   run: docker push ndohjapan/multi-worker
+      - name: push worker to docker hub
+        run: docker push ndohjapan/multi-worker
 
   # deploy_to_GKE:
   #   name: Setup, Build, Publish, and Deploy
