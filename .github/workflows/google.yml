@@ -65,32 +65,29 @@ jobs:
       - name: login to docker
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
-      # Build and push multi-client image
-      - name: Build and push multi-client image
-        uses: docker/build-push-action@v2
-        with:
-          context: ./client
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/multi-client:${{ env.IMAGE_TAG }}
+      - name: build client
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/multi-client:${{ env.IMAGE_TAG }} ./client
 
-      # Build and push multi-server image
-      - name: Build and push multi-server image
-        uses: docker/build-push-action@v2
-        with:
-          context: ./server
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/multi-server:${{ env.IMAGE_TAG }}
+      - name: build nginx
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/multi-nginx:${{ env.IMAGE_TAG }} ./nginx
 
-      # Build and push multi-worker image
-      - name: Build and push multi-worker image
-        uses: docker/build-push-action@v2
-        with:
-          context: ./worker
-          push: true
-          tags: |
-          ${{ secrets.DOCKER_USERNAME }}/multi-worker:${{ env.IMAGE_TAG }}
+      - name: build server
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/multi-server:${{ env.IMAGE_TAG }} ./server
+
+      - name: build worker
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/multi-worker:${{ env.IMAGE_TAG }} ./worker
+
+      - name: push client to docker hub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/multi-client:${{ env.IMAGE_TAG }}
+
+      - name: push nginx to docker hub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/multi-nginx:${{ env.IMAGE_TAG }}
+
+      - name: push server to docker hub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/multi-server:${{ env.IMAGE_TAG }}
+
+      - name: push worker to docker hub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/multi-worker:${{ env.IMAGE_TAG }}
 
   deploy_to_kubernetes:
     name: Deploy to Kubernetes
