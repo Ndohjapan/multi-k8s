@@ -104,8 +104,8 @@ jobs:
     # Setup gcloud CLI
     - uses: google-github-actions/setup-gcloud@94337306dda8180d967a56932ceb4ddcf01edae7
       with:
-        service_account_key: ${{ secrets.GKE_SA_KEY }}
-        project_id: ${{ secrets.GKE_PROJECT }}
+        service_account_key: aecbde63b2b104c3bd4acb58ae562e1adef77322
+        project_id: multi-k8s-380011
 
     # Configure Docker to use the gcloud command-line tool as a credential
     # helper for authentication
