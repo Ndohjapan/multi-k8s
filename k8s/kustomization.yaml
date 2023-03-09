@@ -1,5 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+metadata:
+  name: my-app 
 resources:
   - client-cluster-ip-service.yaml
   - client-deployment.yaml
