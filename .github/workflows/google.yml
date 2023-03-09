@@ -1,14 +1,11 @@
-# This workflow will build a docker container, publish it to Google Container Registry, and deploy it to GKE when there is a push to the "master" branch.
-#
-# To configure this workflow:
-#
-# 1. Ensure that your repository contains the necessary configuration for your Google Kubernetes Engine cluster, including deployment.yml, kustomization.yml, service.yml, etc.
-#
-# 2. Create and configure a Workload Identity Provider for GitHub (https://github.com/google-github-actions/auth#setting-up-workload-identity-federation)
-#
-# 3. Change the values for the GAR_LOCATION, GKE_ZONE, GKE_CLUSTER, IMAGE, REPOSITORY and DEPLOYMENT_NAME environment variables (below).
-#
-# For more support on how to run the workflow, please visit https://github.com/google-github-actions/setup-gcloud/tree/master/example-workflows/gke-kustomize
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# GitHub recommends pinning actions to a commit SHA.
+# To get a newer version, you will need to update the SHA.
+# You can also reference a tag or branch, but the action may change without warning.
 
 name: Build and Deploy to GKE
 
@@ -20,12 +17,11 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
-  GAR_LOCATION: us-central1 # TODO: update region of the Artifact Registry
-  GKE_CLUSTER: cluster-1    # TODO: update to cluster name
-  GKE_ZONE: us-central1-c   # TODO: update to cluster zone
-  DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
-  REPOSITORY: samples # TODO: update to Artifact Registry docker repository
-  IMAGE: static-site
+  GKE_CLUSTER: multi-cluster    # Add your cluster name here.
+  GKE_ZONE: us-central1-c   # Add your cluster zone here.
+  DEPLOYMENT_NAME: gke-test # Add your deployment name here.
+  IMAGE_TAG: ${{ github.sha }}
+
 
 jobs:
   build_test:
@@ -41,23 +37,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    # # Configure Workload Identity Federation and generate an access token.
-    # - id: 'auth'
-    #   name: 'Authenticate to Google Cloud'
-    #   uses: 'google-github-actions/auth@v0'
-    #   with:
-    #     token_format: 'access_token'
-    #     workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
-    #     service_account: 'my-service-account@my-project.iam.gserviceaccount.com'
-
-    # Alternative option - authentication via credentials json
-    # - id: 'auth'
-    #   uses: 'google-github-actions/auth@v0'
-    #   with:
-    #     credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-
-    # Build out the client react image 
-
     - name: build client image
       run: docker build -t ndohjapan/react-test -f ./client/dockerfile.dev ./client
 
@@ -66,14 +45,6 @@ jobs:
 
     - name: test app
       run: docker run --rm --detach ndohjapan/react-test npm test
-
-    
-    # # Get the GKE credentials so we can deploy to the cluster
-    # - name: Set up GKE credentials
-    #   uses: google-github-actions/get-gke-credentials@v0
-    #   with:
-    #     cluster_name: ${{ env.GKE_CLUSTER }}
-    #     location: ${{ env.GKE_ZONE }}
 
   push_to_Docker_Hub:
 
@@ -94,69 +65,70 @@ jobs:
       - name: login to docker
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: build client
-        run: docker build -t ndohjapan/multi-client ./client
+      # Build and push multi-client image
+      - name: Build and push multi-client image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./client
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/multi-client:${{ env.IMAGE_TAG }}
 
-      - name: build nginx
-        run: docker build -t ndohjapan/multi-nginx ./nginx
+      # Build and push multi-server image
+      - name: Build and push multi-server image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./server
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/multi-server:${{ env.IMAGE_TAG }}
 
-      - name: build server
-        run: docker build -t ndohjapan/multi-server ./server
+      # Build and push multi-worker image
+      - name: Build and push multi-worker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./worker
+          push: true
+          tags: |
+          ${{ secrets.DOCKER_USERNAME }}/multi-worker:${{ env.IMAGE_TAG }}
 
-      - name: build worker
-        run: docker build -t ndohjapan/multi-worker ./worker
+  deploy_to_kubernetes:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    environment: production
 
-      - name: push client to docker hub
-        run: docker push ndohjapan/multi-client
-
-      - name: push nginx to docker hub
-        run: docker push ndohjapan/multi-nginx
-
-      - name: push server to docker hub
-        run: docker push ndohjapan/multi-server
-
-      - name: push worker to docker hub
-        run: docker push ndohjapan/multi-worker
-
-  # deploy_to_GKE:
-  #   name: Setup, Build, Publish, and Deploy
-  #   runs-on: ubuntu-latest
-  #   environment: production
-
-  #   permissions:
-  #     contents: 'read'
-  #     id-token: 'write'
-
-  #   steps:
-  #   - name: Checkout
-  #     uses: actions/checkout@v3
-
-  #   # Configure Workload Identity Federation and generate an access token.
-  #   - id: 'auth'
-  #     name: 'Authenticate to Google Cloud'
-  #     uses: 'google-github-actions/auth@v0'
-  #     with:
-  #       token_format: 'access_token'
-  #       workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
-  #       service_account: 'my-service-account@my-project.iam.gserviceaccount.com'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
   
-       # Get the GKE credentials so we can deploy to the cluster
-      # - name: Set up GKE credentials
-      #   uses: google-github-actions/get-gke-credentials@v0
-      #   with:
-      #     cluster_name: ${{ env.GKE_CLUSTER }}
-      #     location: ${{ env.GKE_ZONE }}
+    # Setup gcloud CLI
+    - uses: google-github-actions/setup-gcloud@v0.5.0
+      with:
+        project_id: ${{ secrets.GKE_PROJECT }}
+        service_account_key: ${{ secrets.GKE_SA_KEY }}
+        export_default_credentials: true
 
-  #   # Set up kustomize
-  #   - name: Set up Kustomize
-  #     run: |-
-  #       curl -sfLo kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
-  #       chmod u+x ./kustomize
-  #   # Deploy the Docker image to the GKE cluster
-  #   - name: Deploy
-  #     run: |-
-  #       # replacing the image name in the k8s template
-  #       ./kustomize edit set image LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/IMAGE:TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:$GITHUB_SHA
-  #       ./kustomize build . | kubectl apply -f -
-  #       kubectl rollout status deployment/$DEPLOYMENT_NAME
-  #       kubectl get services -o wide
+    # Configure Docker to use the gcloud command-line tool as a credential
+    # helper for authentication
+    - run: |-
+        gcloud --quiet auth configure-docker
+
+    # Set up kustomize
+    - name: Set up Kustomize
+      run: |-
+        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+        sudo mv ./kustomize /usr/local/bin
+
+    # Deploy the Docker images to the GKE cluster
+    - name: Deploy
+      run: |-
+        kustomize edit set image ${{ secrets.DOCKER_USERNAME }}/multi-client:${{ env.IMAGE_TAG }}
+        kustomize edit set image ${{ secrets.DOCKER_USERNAME }}/multi-server:${{ env.IMAGE_TAG }}
+        kustomize edit set image ${{ secrets.DOCKER_USERNAME }}/multi-worker:${{ env.IMAGE_TAG }}
+        kustomize build . | kubectl apply -f -
+        kubectl rollout status deployment/$DEPLOYMENT_NAME
+        kubectl get services -o wide
+      env:
+        GITHUB_SHA: ${{ github.sha }}
+
