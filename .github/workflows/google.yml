@@ -128,9 +128,6 @@ jobs:
     # Deploy the Docker images to the GKE cluster
     - name: Deploy
       run: |-
-        kustomize edit set image ${{ secrets.DOCKER_USERNAME }}/multi-client:${{ env.IMAGE_TAG }}
-        kustomize edit set image ${{ secrets.DOCKER_USERNAME }}/multi-server:${{ env.IMAGE_TAG }}
-        kustomize edit set image ${{ secrets.DOCKER_USERNAME }}/multi-worker:${{ env.IMAGE_TAG }}
         kustomize build ./k8s | kubectl apply -f k8s
         kubectl rollout status deployment/$DEPLOYMENT_NAME
         kubectl get services -o wide
