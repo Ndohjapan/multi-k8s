@@ -104,14 +104,13 @@ jobs:
     # Setup gcloud CLI
     - uses: 'google-github-actions/auth@v1'
       with:
-        workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
-        service_account: ${{ secrets.GKE_EMAIL }}
+        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
-    # Configure Docker to use the gcloud command-line tool as a credential
-    # helper for authentication
-    - run: |-
-        gcloud --quiet auth configure-docker
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v1'
 
+    - name: 'Use gcloud CLI'
+      run: 'gcloud info'
     
     # Get the GKE credentials so we can deploy to the cluster
     - uses: google-github-actions/get-gke-credentials@fb08709ba27618c31c09e014e1d8364b02e5042e
