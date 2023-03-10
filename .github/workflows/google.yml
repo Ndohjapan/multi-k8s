@@ -133,8 +133,8 @@ jobs:
       run: |-
         kubectl apply -f k8s
         kubectl set image deployment/client-deployment client=${{ secrets.DOCKER_USERNAME }}/multi-client:${{ env.IMAGE_TAG }}
-        kubectl set image deployment/server-deployment client=${{ secrets.DOCKER_USERNAME }}/multi-server:${{ env.IMAGE_TAG }}
-        kubectl set image deployment/worker-deployment client=${{ secrets.DOCKER_USERNAME }}/multi-worker:${{ env.IMAGE_TAG }}
+        kubectl set image deployment/server-deployment server=${{ secrets.DOCKER_USERNAME }}/multi-server:${{ env.IMAGE_TAG }}
+        kubectl set image deployment/worker-deployment worker=${{ secrets.DOCKER_USERNAME }}/multi-worker:${{ env.IMAGE_TAG }}
         kubectl rollout status deployment/$DEPLOYMENT_NAME1
         kubectl rollout status deployment/$DEPLOYMENT_NAME2
         kubectl rollout status deployment/$DEPLOYMENT_NAME3
