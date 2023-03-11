@@ -1,5 +1,4 @@
 apiVersion: cert-manager.io/v1
- 
 kind: Certificate
 metadata:
   name: api-cert-tls
@@ -14,7 +13,6 @@ spec:
   acme:
     config:
       - http01:
-        ingressClass: nginx
-      domains:
-        - api.lcufeeding.com
-  
+          ingressClass: nginx
+        domains:
+          - api.lcufeeding.com
