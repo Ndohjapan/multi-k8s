@@ -10,9 +10,3 @@ spec:
   commonName: api.lcufeeding.com
   dnsNames:
     - api.lcufeeding.com
-  acme:
-    config:
-      - http01:
-          ingressClass: nginx
-        domains:
-          - api.lcufeeding.com
