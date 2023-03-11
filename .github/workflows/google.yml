@@ -68,28 +68,28 @@ jobs:
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
       - name: build client
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/multi-client:${{ env.IMAGE_TAG }} ./client
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/multi-client ./client
 
       - name: build nginx
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/multi-nginx:${{ env.IMAGE_TAG }} ./nginx
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/multi-nginx ./nginx
 
       - name: build server
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/multi-server:${{ env.IMAGE_TAG }} ./server
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/multi-server ./server
 
       - name: build worker
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/multi-worker:${{ env.IMAGE_TAG }} ./worker
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/multi-worker ./worker
 
       - name: push client to docker hub
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/multi-client:${{ env.IMAGE_TAG }} 
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/multi-client 
 
       - name: push nginx to docker hub
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/multi-nginx:${{ env.IMAGE_TAG }}
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/multi-nginx
 
       - name: push server to docker hub
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/multi-server:${{ env.IMAGE_TAG }}
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/multi-server
 
       - name: push worker to docker hub
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/multi-worker:${{ env.IMAGE_TAG }}
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/multi-worker
 
   deploy_to_kubernetes:
     name: Deploy to Kubernetes
@@ -132,9 +132,9 @@ jobs:
     - name: Deploy
       run: |-
         kubectl apply -f k8s
-        kubectl set image deployment/client-deployment client=${{ secrets.DOCKER_USERNAME }}/multi-client:${{ env.IMAGE_TAG }}
-        kubectl set image deployment/server-deployment server=${{ secrets.DOCKER_USERNAME }}/multi-server:${{ env.IMAGE_TAG }}
-        kubectl set image deployment/worker-deployment worker=${{ secrets.DOCKER_USERNAME }}/multi-worker:${{ env.IMAGE_TAG }}
+        kubectl set image deployment/client-deployment client=${{ secrets.DOCKER_USERNAME }}/multi-client
+        kubectl set image deployment/server-deployment server=${{ secrets.DOCKER_USERNAME }}/multi-server
+        kubectl set image deployment/worker-deployment worker=${{ secrets.DOCKER_USERNAME }}/multi-worker
         kubectl rollout status deployment/$DEPLOYMENT_NAME1
         kubectl rollout status deployment/$DEPLOYMENT_NAME2
         kubectl rollout status deployment/$DEPLOYMENT_NAME3

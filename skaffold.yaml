@@ -1,0 +1,38 @@
+apiVersion: skaffold/v2beta12
+kind: Config
+deploy:
+  kubectl:
+    manifests:
+      - ./k8s/*
+build:
+  local:
+    push: false
+  artifacts:
+    - image: ndohjapan/multi-client
+      context: ./client
+      docker:
+        dockerfile: dockerfile.dev
+      sync:
+        manual:
+          - src: "src/**/*.js"
+            dest: .
+          - src: "src/**/*.css"
+            dest: .
+          - src: "src/**/*.html"
+            dest: .
+    - image: ndohjapan/multi-worker
+      context: ./worker
+      docker:
+        dockerfile: dockerfile.dev
+      sync:
+        manual:
+          - src: "*.js"
+            dest: .
+    - image: ndohjapan/multi-server
+      context: ./server
+      docker:
+        dockerfile: dockerfile.dev
+      sync:
+        manual:
+          - src: "*.js"
+            dest: .
